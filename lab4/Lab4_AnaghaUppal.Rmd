@@ -1,0 +1,148 @@
+---
+title: "Lab4_AnaghaUppal"
+author: "Anagha Uppal"
+date: "4/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##QUESTION 1
+
+Libraries
+```{r lib}
+library(regclass)
+library(stats)
+library(pracma)
+library(itsmr)
+```
+
+Importing data
+```{r data}
+setwd("~/Desktop/Anagha/UCSB/Classes/GEOG 210C/Lab4")
+data1 <- read.table("ding-data1.txt", header=FALSE)
+```
+
+Plotting all variables together
+```{r}
+plot(data1$V1,data1$V2, col="red")
+points(data1$V1,data1$V3,pch="+")
+points(data1$V1, data1$V4,pch="*",col="blue")
+points(data1$V1, data1$V5, col="purple")
+points(data1$V1)
+```
+
+Creating a linear regression model on everything and plotting the fitline over the data.
+```{r}
+linMod <- lm(V5~.-V1,data=data1)
+summary(linMod)
+plot(data1$V1,data1$V5)
+(lines(predict(linMod)))
+sqrt(summary(linMod)$adj.r.squared) #this is the correlation coefficient
+#0.59
+```
+Part 3 is also calculated here. The correlation between var4 and regressed var4 is 0.59. Var1 (Var2 in the table) is the only significant predictor and therefore, the most important one.
+
+Data kernel method:
+```{r}
+M=3
+P = length(data1$V1)
+G = matrix(0,P,M)
+G[,1] = data1$V2
+G[,2] = data1$V3
+G[,3] = data1$V4
+
+GT = t(G)
+
+
+mest = inv(GT%*%G)%*%(GT%*%data1$V5)
+dpre = G%*%mest
+e = data1$V5 - dpre
+E = t(e)%*%e
+```
+The result for the data kernel method is the same as the result through the regression method.
+
+## PART 2
+
+#Importing new data
+```{r}
+data2 <- read.table("ding-data2.txt", header=FALSE)
+```
+
+Plotting X
+```{r plot2}
+plot(data2$V2,data2$V3, col="red")
+plot(data2$V2,data2$V1)
+plot(data2$V3,data2$V1)
+```
+
+Building a linear regression model and calculating linear trends of X and Y
+```{r lm2}
+linMod2 <- lm(V3~V2,data = data2)
+linMod2
+summary(linMod2)
+sqrt(summary(linMod2)$adj.r.squared) #this is the correlation coefficient
+#0.8209
+linModX <- lm(V2~V1,data=data2)
+linModY <- lm(V3~V1,data=data2)
+```
+
+Residuals from X and Y and plotting, and finally calculating correlation between two residual time series
+```{r}
+linModX.res = resid(linModX)
+linModY.res = resid(linModY)
+plot(linModX.res)
+plot(linModY.res)
+linMod2.1 <- lm(linModY.res~linModX.res,data=data2)
+summary(linMod2.1)
+sqrt(summary(linMod2.1)$adj.r.squared) #this is the correlation coefficient
+#In this case, the correlation coefficient is 0.7353
+```
+
+Regressed quadratic model
+```{r}
+
+quadModX <- lm(data2$V2~poly(data2$V1,2, raw=FALSE))
+quadModY <- lm(data2$V3~poly(data2$V1,2, raw=FALSE))
+quadModX.res = resid(quadModX)
+quadModY.res = resid(quadModY)
+quadMod3 <- lm(quadModY.res~poly(quadModX.res,2,raw=TRUE))
+summary(quadMod3)
+sqrt(summary(quadMod3)$adj.r.squared) #this is the correlation coefficient
+
+```
+Interestingly, there is very little difference between the linear regression and the quadratic regression. The adjusted R in the linear regression is 0.735. The adjusted R in the quadratic regression is 0.72. Because the regression is slightly lower for quadratic, one should use this model.
+
+##QUESTION 3
+
+Part 1: Sum of first 10 sine terms to make square wave using individual components of waves.
+```{r q3}
+N = 20;
+x = c(0:100)/100;
+f = ones(1,101)*1/2;
+ff= zeros(1,101);
+for (i in seq(1,N,2)) {
+      a = 2/pi/i;
+      f = f+a*sin(2*pi*i*x);
+}
+
+plot(x,f)
+lines(x,f)
+```
+
+The two bits different for this part is that we want first 100 sin terms, so we'll change N to 200. Additionally, we want 5 full periods and not 1, so we'll add 5 to the f equation.
+```{r q3-2}
+N = 200;
+x = c(0:100)/100;
+f = ones(1,101)*1/2;
+ff= zeros(1,101);
+for (i in seq(1,N,2)) {
+      a = 2/pi/i;
+      f = f+a*sin(2*pi*5*i*x);
+}
+
+plot(x,f)
+lines(x,f)
+```
